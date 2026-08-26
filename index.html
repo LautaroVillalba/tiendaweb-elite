@@ -142,7 +142,7 @@
                 </div>
             </div>
 
-            <!-- Menú Desplegable Mobile (Solución opción catálogo celular) -->
+            <!-- Menú Desplegable Mobile -->
             <div id="menu-mobile" class="md:hidden bg-[#1e3a8a] border-t border-blue-900 hidden">
                 <div class="px-4 py-3 space-y-2">
                     <a href="?categoria=TODOS" class="block text-xs font-bold text-white py-1.5 border-b border-blue-900">CATÁLOGO COMPLETO</a>
@@ -154,9 +154,10 @@
             </div>
         </header>
 
-        <div class="h-[95px] md:h-[115px]"></div>
+        <!-- ESPACIADOR PARA EL HEADER FIJO -->
+        <div id="spacer-header" class="h-[95px] md:h-[155px]"></div>
 
-        <!-- SECCIÓN HERO BANNER (Ubicada abajo de la barra de búsqueda como solicitaste) -->
+        <!-- SECCIÓN HERO BANNER (Posicionado exactamente abajo de la barra de búsqueda y el menú completo) -->
         <section class="relative w-full bg-[#f8fafc] flex items-center justify-center overflow-hidden">
             <div class="relative w-full max-w-screen-2xl mx-auto overflow-hidden">
                 <div id="carousel-slides" class="flex transition-transform duration-700 ease-in-out">
@@ -322,7 +323,6 @@
             return "$" + valor.toLocaleString("es-AR", { minimumFractionDigits: 2 });
         }
 
-        // Función para abrir/cerrar el menú en dispositivos móviles
         function toggleMenuMobile() {
             const menu = document.getElementById('menu-mobile');
             menu.classList.toggle('hidden');
@@ -676,7 +676,6 @@
             document.getElementById('modal-carrito').classList.add('hidden');
         }
 
-        // Función actualizada para enviar al cliente directo a WhatsApp con el detalle de la compra[cite: 1]
         function confirmarCompraWhatsApp() {
             if (carrito.length === 0) {
                 alert('El carrito está vacío');
@@ -694,7 +693,6 @@
 
             mensaje += `\n*TOTAL ESTIMADO:* ${formatearPrecio(total)}\n\n¿Me indican cómo continuar con el pago y envío?`;
 
-            // Utiliza directamente el enlace de WhatsApp configurado para la tienda
             const urlWhatsApp = `https://wa.me/message/5JBR7UH53QZRN1?text=${encodeURIComponent(mensaje)}`;
             window.open(urlWhatsApp, '_blank');
         }
