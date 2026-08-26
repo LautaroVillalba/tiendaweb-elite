@@ -49,7 +49,7 @@
                         
                         <!-- Botón Menú Mobile -->
                         <div class="flex md:hidden">
-                            <button class="inline-flex items-center justify-center h-9 w-9 text-gray-800 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all" type="button">
+                            <button onclick="toggleMenuMobile()" class="inline-flex items-center justify-center h-9 w-9 text-gray-800 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all" type="button">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
                                     <line x1="4" x2="20" y1="12" y2="12"></line>
                                     <line x1="4" x2="20" y1="6" y2="6"></line>
@@ -120,7 +120,7 @@
                 </div>
             </div>
 
-            <!-- Menú Navegación Categorías -->
+            <!-- Menú Navegación Categorías (Desktop) -->
             <div class="hidden md:block bg-[#1e3a8a]">
                 <div class="container mx-auto px-4">
                     <nav class="hidden md:flex items-center justify-center space-x-10 py-3 relative">
@@ -141,11 +141,22 @@
                     </nav>
                 </div>
             </div>
+
+            <!-- Menú Desplegable Mobile (Solución opción catálogo celular) -->
+            <div id="menu-mobile" class="md:hidden bg-[#1e3a8a] border-t border-blue-900 hidden">
+                <div class="px-4 py-3 space-y-2">
+                    <a href="?categoria=TODOS" class="block text-xs font-bold text-white py-1.5 border-b border-blue-900">CATÁLOGO COMPLETO</a>
+                    <a href="?categoria=BAZAR" class="block text-xs font-bold text-white/90 py-1.5 pl-2">BAZAR</a>
+                    <a href="?categoria=CALZADO" class="block text-xs font-bold text-white/90 py-1.5 pl-2">CALZADO</a>
+                    <a href="?categoria=INDUMENTARIA" class="block text-xs font-bold text-white/90 py-1.5 pl-2">INDUMENTARIA</a>
+                    <a href="?categoria=HOGAR" class="block text-xs font-bold text-white/90 py-1.5 pl-2">HOGAR</a>
+                </div>
+            </div>
         </header>
 
         <div class="h-[95px] md:h-[115px]"></div>
 
-        <!-- SECCIÓN HERO BANNER -->
+        <!-- SECCIÓN HERO BANNER (Ubicada abajo de la barra de búsqueda como solicitaste) -->
         <section class="relative w-full bg-[#f8fafc] flex items-center justify-center overflow-hidden">
             <div class="relative w-full max-w-screen-2xl mx-auto overflow-hidden">
                 <div id="carousel-slides" class="flex transition-transform duration-700 ease-in-out">
@@ -309,6 +320,12 @@
 
         function formatearPrecio(valor) {
             return "$" + valor.toLocaleString("es-AR", { minimumFractionDigits: 2 });
+        }
+
+        // Función para abrir/cerrar el menú en dispositivos móviles
+        function toggleMenuMobile() {
+            const menu = document.getElementById('menu-mobile');
+            menu.classList.toggle('hidden');
         }
 
         function intentarIniciarSesion() {
@@ -659,13 +676,12 @@
             document.getElementById('modal-carrito').classList.add('hidden');
         }
 
+        // Función actualizada para enviar al cliente directo a WhatsApp con el detalle de la compra[cite: 1]
         function confirmarCompraWhatsApp() {
             if (carrito.length === 0) {
                 alert('El carrito está vacío');
                 return;
             }
-
-            const numeroTelefono = "549351XXXXXXX"; 
 
             let mensaje = "¡Hola! Elite Importadora, quisiera realizar el siguiente pedido:\n\n";
             let total = 0;
@@ -678,7 +694,8 @@
 
             mensaje += `\n*TOTAL ESTIMADO:* ${formatearPrecio(total)}\n\n¿Me indican cómo continuar con el pago y envío?`;
 
-            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroTelefono}&text=${encodeURIComponent(mensaje)}`;
+            // Utiliza directamente el enlace de WhatsApp configurado para la tienda
+            const urlWhatsApp = `https://wa.me/message/5JBR7UH53QZRN1?text=${encodeURIComponent(mensaje)}`;
             window.open(urlWhatsApp, '_blank');
         }
 
@@ -723,4 +740,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
