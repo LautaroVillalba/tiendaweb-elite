@@ -13,6 +13,16 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        /* Estilo para la marquesina en movimiento continuo */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-white">
@@ -43,6 +53,14 @@
 
         <!-- HEADER FIJO -->
         <header id="site-header" class="fixed left-0 right-0 z-50 bg-white shadow-md top-0">
+            <!-- LÍNEA EN MOVIMIENTO CONSTANTE -->
+            <div class="bg-blue-900 text-white text-xs font-bold py-1.5 overflow-hidden whitespace-nowrap">
+                <div class="animate-marquee">
+                    <span>ELITE IMPORTADA</span> &nbsp;&bull;&nbsp; <span>CORDOBA CAPITAL</span> &nbsp;&bull;&nbsp; <span>MAYORISTA Y MINORISTA</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span>ELITE IMPORTADA</span> &nbsp;&bull;&nbsp; <span>CORDOBA CAPITAL</span> &nbsp;&bull;&nbsp; <span>MAYORISTA Y MINORISTA</span>
+                </div>
+            </div>
+
             <div class="border-b border-gray-100">
                 <div class="container mx-auto px-5 py-4">
                     <div class="flex items-center justify-between gap-4">
@@ -155,7 +173,7 @@
         </header>
 
         <!-- ESPACIADOR PARA EL HEADER FIJO -->
-        <div id="spacer-header" class="h-[135px] md:h-[155px]"></div>
+        <div id="spacer-header" class="h-[160px] md:h-[180px]"></div>
 
         <!-- SECCIÓN HERO BANNER -->
         <section class="relative w-full bg-[#f8fafc] flex items-center justify-center overflow-hidden">
@@ -193,12 +211,12 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DE PRODUCTOS DESTACADOS -->
-        <section class="py-10 bg-sky-200">
+        <!-- SECCIÓN DE PRODUCTOS DEL MOMENTO -->
+        <section class="py-10 bg-slate-100 border-t border-b border-slate-200">
             <div class="container mx-auto px-4">
                 <div class="mb-6 flex justify-between items-end">
                     <div>
-                        <h2 id="titulo-categoria" class="text-2xl font-normal text-gray-800 text-left mb-2">Productos Destacados</h2>
+                        <h2 id="titulo-categoria" class="text-2xl font-bold text-gray-800 text-left mb-2">Productos del Momento</h2>
                         <p class="text-sm text-gray-600">Descubre nuestras mejores ofertas al por mayor y menor</p>
                     </div>
                 </div>
@@ -289,12 +307,6 @@
             </form>
         </div>
     </div>
-
-    <!-- SDKs de Firebase (Firestore) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, deletedoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.firebase.js"; // OJO: Abajo dejo la inicialización estándar limpia y lista para usar.
-    </script>
 
     <!-- SCRIPT DE INTERACTIVIDAD CONECTADO A FIREBASE -->
     <script type="module">
@@ -422,6 +434,27 @@
             document.getElementById('modal-producto').classList.add('hidden');
         };
 
+        // ESCUCHAR TECLAS ESC (CANCELAR) Y ENTER (GUARDAR) EN EL MODAL DE PRODUCTO
+        window.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('modal-producto');
+            if (!modal.classList.contains('hidden')) {
+                if (event.key === 'Escape') {
+                    window.cerrarModalProducto();
+                } else if (event.key === 'Enter') {
+                    // Evitar que se dispare si está haciendo foco en un textarea u otro botón secundario de cancelar
+                    if (event.target.tagName !== 'BUTTON' && event.target.type !== 'button') {
+                        event.preventDefault();
+                        const form = document.getElementById('form-producto');
+                        if (form.checkValidity()) {
+                            form.requestSubmit();
+                        } else {
+                            form.reportValidity();
+                        }
+                    }
+                }
+            }
+        });
+
         // CARGAR PRODUCTOS DESDE FIREBASE
         window.cargarProductos = async function() {
             try {
@@ -451,7 +484,7 @@
             const titulo = document.getElementById('titulo-categoria');
             const grid = document.getElementById('grid-productos');
 
-            titulo.textContent = catSeleccionada === 'TODOS' ? 'Productos Destacados' : `Categoría: ${catSeleccionada}`;
+            titulo.textContent = catSeleccionada === 'TODOS' ? 'Productos del Momento' : `Categoría: ${catSeleccionada}`;
 
             const filtrados = catSeleccionada === 'TODOS' 
                 ? productosDB 
