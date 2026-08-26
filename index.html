@@ -154,7 +154,7 @@
             </div>
         </header>
 
-        <!-- ESPACIADOR PARA EL HEADER FIJO (Ajustado responsivamente para evitar que el banner quede oculto en celulares) -->
+        <!-- ESPACIADOR PARA EL HEADER FIJO -->
         <div id="spacer-header" class="h-[135px] md:h-[155px]"></div>
 
         <!-- SECCIÓN HERO BANNER -->
@@ -290,50 +290,58 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE INTERACTIVIDAD Y GESTIÓN DE PRODUCTOS -->
-    <script>
+    <!-- SDKs de Firebase (Firestore) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, deletedoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.firebase.js"; // OJO: Abajo dejo la inicialización estándar limpia y lista para usar.
+    </script>
+
+    <!-- SCRIPT DE INTERACTIVIDAD CONECTADO A FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // =========================================================================
+        // CONFIGURACIÓN DE FIREBASE (Reemplaza con los datos de tu consola de Firebase)
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const productosBaseInicial = [
-            { id: 1, nombre: "TERMO STANLEY 1.3L", precioMayorista: 21000, precioMinorista: 25000, categoria: "BAZAR", img: "https://via.placeholder.com/400x480?text=Termo+Bazar" },
-            { id: 2, nombre: "ORGANIZADOR DE COCINA", precioMayorista: 7000, precioMinorista: 8500, categoria: "BAZAR", img: "https://via.placeholder.com/400x480?text=Organizador" },
-            { id: 3, nombre: "ZAPATILLAS DEPORTIVAS", precioMayorista: 27000, precioMinorista: 32000, categoria: "CALZADO", img: "https://via.placeholder.com/400x480?text=Zapatillas" },
-            { id: 4, nombre: "SANDALIAS DE VERANO", precioMayorista: 11800, precioMinorista: 14200, categoria: "CALZADO", img: "https://via.placeholder.com/400x480?text=Sandalias" },
-            { id: 5, nombre: "REMERA OVERSIZE UNISEX", precioMayorista: 9800, precioMinorista: 12000, categoria: "INDUMENTARIA", img: "https://via.placeholder.com/400x480?text=Remera" },
-            { id: 6, nombre: "PANTALÓN JOGGER", precioMayorista: 15000, precioMinorista: 18500, categoria: "INDUMENTARIA", img: "https://via.placeholder.com/400x480?text=Jogger" },
-            { id: 7, nombre: "JUEGO DE SÁBANAS 2 PLAZAS", precioMayorista: 18000, precioMinorista: 22000, categoria: "HOGAR", img: "https://via.placeholder.com/400x480?text=Sabanas" },
-            { id: 8, nombre: "LÁMPARA LED DE ESCRITORIO", precioMayorista: 8000, precioMinorista: 9800, categoria: "HOGAR", img: "https://via.placeholder.com/400x480?text=Lampara" }
+            { id: "1", nombre: "TERMO STANLEY 1.3L", precioMayorista: 21000, precioMinorista: 25000, categoria: "BAZAR", img: "https://via.placeholder.com/400x480?text=Termo+Bazar" },
+            { id: "2", nombre: "ORGANIZADOR DE COCINA", precioMayorista: 7000, precioMinorista: 8500, categoria: "BAZAR", img: "https://via.placeholder.com/400x480?text=Organizador" },
+            { id: "3", nombre: "ZAPATILLAS DEPORTIVAS", precioMayorista: 27000, precioMinorista: 32000, categoria: "CALZADO", img: "https://via.placeholder.com/400x480?text=Zapatillas" },
+            { id: "4", nombre: "SANDALIAS DE VERANO", precioMayorista: 11800, precioMinorista: 14200, categoria: "CALZADO", img: "https://via.placeholder.com/400x480?text=Sandalias" },
+            { id: "5", nombre: "REMERA OVERSIZE UNISEX", precioMayorista: 9800, precioMinorista: 12000, categoria: "INDUMENTARIA", img: "https://via.placeholder.com/400x480?text=Remera" },
+            { id: "6", nombre: "PANTALÓN JOGGER", precioMayorista: 15000, precioMinorista: 18500, categoria: "INDUMENTARIA", img: "https://via.placeholder.com/400x480?text=Jogger" },
+            { id: "7", nombre: "JUEGO DE SÁBANAS 2 PLAZAS", precioMayorista: 18000, precioMinorista: 22000, categoria: "HOGAR", img: "https://via.placeholder.com/400x480?text=Sabanas" },
+            { id: "8", nombre: "LÁMPARA LED DE ESCRITORIO", precioMayorista: 8000, precioMinorista: 9800, categoria: "HOGAR", img: "https://via.placeholder.com/400x480?text=Lampara" }
         ];
 
-        let productosDB = JSON.parse(localStorage.getItem('elite_productos_db')) || productosBaseInicial;
+        let productosDB = [];
         let carrito = [];
         let esAdmin = localStorage.getItem('elite_sesion_activa') === 'true';
 
-        productosDB = productosDB.map(p => {
-            if (p.precioMayorista === undefined) {
-                p.precioMayorista = p.precio || 10000;
-                p.precioMinorista = p.precio ? Math.round(p.precio * 1.2) : 12000;
-            }
-            return p;
-        });
-
-        function guardarBaseEnStorage() {
-            localStorage.setItem('elite_productos_db', JSON.stringify(productosDB));
-        }
-
-        function formatearPrecio(valor) {
-            return "$" + valor.toLocaleString("es-AR", { minimumFractionDigits: 2 });
-        }
-
-        function toggleMenuMobile() {
+        // Hacer funciones accesibles de forma global para los botones HTML
+        window.toggleMenuMobile = function() {
             const menu = document.getElementById('menu-mobile');
             menu.classList.toggle('hidden');
-        }
+        };
 
-        function intentarIniciarSesion() {
+        window.intentarIniciarSesion = function() {
             if (esAdmin) {
                 alert("Ya tienes la sesión de dueño activa.");
                 return;
             }
-
             const passwordIngresada = prompt("Ingrese la contraseña de administrador (Dueño):");
             if (passwordIngresada === "admin123") { 
                 esAdmin = true;
@@ -344,20 +352,19 @@
             } else if (passwordIngresada !== null) {
                 alert("Contraseña incorrecta. Acceso denegado.");
             }
-        }
+        };
 
-        function cerrarSesionAdmin() {
+        window.cerrarSesionAdmin = function() {
             esAdmin = false;
             localStorage.removeItem('elite_sesion_activa');
             alert("Has cerrado sesión correctamente.");
             verificarEstadoAdmin();
             cargarProductos();
-        }
+        };
 
         function verificarEstadoAdmin() {
             const panelAdmin = document.getElementById('panel-admin');
             const textoBtn = document.getElementById('texto-sesion-btn');
-
             if (esAdmin) {
                 panelAdmin.classList.remove('hidden');
                 textoBtn.textContent = "Panel Dueño (Activo)";
@@ -367,11 +374,10 @@
             }
         }
 
-        function cambiarTipoImagen() {
+        window.cambiarTipoImagen = function() {
             const tipo = document.getElementById('prod-tipo-img').value;
             const divArchivo = document.getElementById('contenedor-img-archivo');
             const divUrl = document.getElementById('contenedor-img-url');
-            
             if (tipo === 'archivo') {
                 divArchivo.classList.remove('hidden');
                 divUrl.classList.add('hidden');
@@ -379,21 +385,20 @@
                 divArchivo.classList.add('hidden');
                 divUrl.classList.remove('hidden');
             }
-        }
+        };
 
-        function abrirModalProducto(id = null) {
+        window.abrirModalProducto = function(id = null) {
             const modal = document.getElementById('modal-producto');
             const titulo = document.getElementById('modal-prod-titulo');
-            
             document.getElementById('form-producto').reset();
             document.getElementById('prod-id').value = '';
             document.getElementById('prod-img-actual').value = '';
             document.getElementById('prod-tipo-img').value = 'archivo';
-            cambiarTipoImagen();
+            window.cambiarTipoImagen();
 
             if (id) {
                 titulo.textContent = "Editar Producto";
-                const prod = productosDB.find(p => p.id === id);
+                const prod = productosDB.find(p => p.id == id);
                 if (prod) {
                     document.getElementById('prod-id').value = prod.id;
                     document.getElementById('prod-nombre').value = prod.nombre;
@@ -401,25 +406,67 @@
                     document.getElementById('prod-precio-minorista').value = prod.precioMinorista;
                     document.getElementById('prod-categoria').value = prod.categoria;
                     document.getElementById('prod-img-actual').value = prod.img;
-                    
-                    if (prod.img.startsWith('http')) {
+                    if (prod.img && prod.img.startsWith('http')) {
                         document.getElementById('prod-tipo-img').value = 'url';
                         document.getElementById('prod-img').value = prod.img;
-                        cambiarTipoImagen();
+                        window.cambiarTipoImagen();
                     }
                 }
             } else {
                 titulo.textContent = "Subir Nuevo Producto";
             }
-
             modal.classList.remove('hidden');
-        }
+        };
 
-        function cerrarModalProducto() {
+        window.cerrarModalProducto = function() {
             document.getElementById('modal-producto').classList.add('hidden');
+        };
+
+        // CARGAR PRODUCTOS DESDE FIREBASE
+        window.cargarProductos = async function() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "productos"));
+                productosDB = [];
+                querySnapshot.forEach((docSnap) => {
+                    productosDB.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Si la base está vacía por primera vez, subimos los iniciales automáticamente
+                if (productosDB.length === 0) {
+                    for (let p of productosBaseInicial) {
+                        await setDoc(doc(db, "productos", String(p.id)), p);
+                        productosDB.push(p);
+                    }
+                }
+            } catch (error) {
+                console.error("Error al cargar de Firebase:", error);
+            }
+
+            renderizarGrilla();
+        };
+
+        function renderizarGrilla() {
+            const params = new URLSearchParams(window.location.search);
+            const catSeleccionada = params.get('categoria') || 'TODOS';
+            const titulo = document.getElementById('titulo-categoria');
+            const grid = document.getElementById('grid-productos');
+
+            titulo.textContent = catSeleccionada === 'TODOS' ? 'Productos Destacados' : `Categoría: ${catSeleccionada}`;
+
+            const filtrados = catSeleccionada === 'TODOS' 
+                ? productosDB 
+                : productosDB.filter(p => p.categoria === catSeleccionada);
+
+            if (filtrados.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-600 py-8">No hay productos cargados en esta categoría.</p>`;
+                return;
+            }
+
+            grid.innerHTML = filtrados.map(prod => generarCardProductoHTML(prod)).join('');
         }
 
-        function guardarProducto(event) {
+        // GUARDAR O EDITAR EN FIREBASE
+        window.guardarProducto = async function(event) {
             event.preventDefault();
             const idInput = document.getElementById('prod-id').value;
             const nombre = document.getElementById('prod-nombre').value.toUpperCase();
@@ -430,63 +477,77 @@
             const imgActual = document.getElementById('prod-img-actual').value;
             const fileInput = document.getElementById('prod-file');
 
-            const procesarGuardado = (imgFinal) => {
-                if (idInput) {
-                    const index = productosDB.findIndex(p => p.id == idInput);
-                    if (index !== -1) {
-                        productosDB[index] = { id: parseInt(idInput), nombre, precioMayorista, precioMinorista, categoria, img: imgFinal || imgActual };
-                    }
-                } else {
-                    const nuevoId = productosDB.length > 0 ? Math.max(...productosDB.map(p => p.id)) + 1 : 1;
-                    productosDB.push({ id: nuevoId, nombre, precioMayorista, precioMinorista, categoria, img: imgFinal || 'https://via.placeholder.com/400x480?text=Sin+Imagen' });
-                }
+            const procesarGuardado = async (imgFinal) => {
+                const idFinal = idInput ? String(idInput) : String(Date.now());
+                const imagenFinal = imgFinal || imgActual || 'https://via.placeholder.com/400x480?text=Sin+Imagen';
 
-                guardarBaseEnStorage();
-                cerrarModalProducto();
-                cargarProductos();
-                alert("¡Producto guardado exitosamente!");
+                const productoData = {
+                    id: idFinal,
+                    nombre,
+                    precioMayorista,
+                    precioMinorista,
+                    categoria,
+                    img: imagenFinal
+                };
+
+                try {
+                    await setDoc(doc(db, "productos", idFinal), productoData);
+                    window.cerrarModalProducto();
+                    await window.cargarProductos();
+                    alert("¡Producto guardado exitosamente en la nube!");
+                } catch (e) {
+                    console.error("Error al guardar:", e);
+                    alert("Hubo un error al guardar en la base de datos.");
+                }
             };
 
             if (tipoImg === 'archivo' && fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    procesarGuardado(e.target.result);
+                reader.onload = async function(e) {
+                    await procesarGuardado(e.target.result);
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
                 const urlImg = document.getElementById('prod-img').value;
-                procesarGuardado(tipoImg === 'url' ? urlImg : null);
+                await procesarGuardado(tipoImg === 'url' ? urlImg : null);
             }
+        };
+
+        // ELIMINAR DE FIREBASE
+        window.eliminarProducto = async function(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este producto de la tienda para todos?")) {
+                try {
+                    await deleteDoc(doc(db, "productos", String(id)));
+                    await window.cargarProductos();
+                    alert("Producto eliminado de la nube.");
+                } catch (e) {
+                    console.error("Error al eliminar:", e);
+                    alert("No se pudo eliminar el producto.");
+                }
+            }
+        };
+
+        function formatearPrecio(valor) {
+            return "$" + valor.toLocaleString("es-AR", { minimumFractionDigits: 2 });
         }
 
-        function eliminarProducto(id) {
-            if (confirm("¿Estás seguro de que deseas eliminar este producto de la tienda?")) {
-                productosDB = productosDB.filter(p => p.id !== id);
-                guardarBaseEnStorage();
-                cargarProductos();
-            }
-        }
-
-        function buscarProductos(texto, idContenedorResultados) {
+        window.buscarProductos = function(texto, idContenedorResultados) {
             const contenedor = document.getElementById(idContenedorResultados);
             const query = texto.trim().toLowerCase();
-
             if (query === '') {
                 contenedor.classList.add('hidden');
                 contenedor.innerHTML = '';
                 return;
             }
-
             const coincidentes = productosDB.filter(prod => 
                 prod.nombre.toLowerCase().includes(query) || 
                 prod.categoria.toLowerCase().includes(query)
             );
-
             if (coincidentes.length === 0) {
                 contenedor.innerHTML = '<div class="p-3 text-sm text-gray-500 text-center">No se encontraron productos</div>';
             } else {
                 contenedor.innerHTML = coincidentes.map(prod => `
-                    <div onclick="seleccionarProductoBuscado(${prod.id})" class="flex items-center gap-3 p-2.5 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0 transition-colors">
+                    <div onclick="seleccionarProductoBuscado('${prod.id}')" class="flex items-center gap-3 p-2.5 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0 transition-colors">
                         <img src="${prod.img}" alt="${prod.nombre}" class="w-10 h-10 object-cover rounded bg-gray-100">
                         <div class="flex-1 overflow-hidden">
                             <p class="text-xs font-semibold text-gray-800 truncate">${prod.nombre}</p>
@@ -495,29 +556,26 @@
                     </div>
                 `).join('');
             }
-
             contenedor.classList.remove('hidden');
-        }
+        };
 
-        function seleccionarProductoBuscado(id) {
+        window.seleccionarProductoBuscado = function(id) {
             document.getElementById('resultados-desktop').classList.add('hidden');
             document.getElementById('resultados-mobile').classList.add('hidden');
-
-            const producto = productosDB.find(p => p.id === id);
+            const producto = productosDB.find(p => p.id == id);
             const grid = document.getElementById('grid-productos');
             const titulo = document.getElementById('titulo-categoria');
-
             titulo.textContent = `Resultado para: "${producto.nombre}"`;
             grid.innerHTML = generarCardProductoHTML(producto);
-        }
+        };
 
         function generarCardProductoHTML(prod) {
             let botonesAdminHTML = '';
             if (esAdmin) {
                 botonesAdminHTML = `
                     <div class="flex gap-1 mt-2 pt-2 border-t border-gray-200">
-                        <button onclick="abrirModalProducto(${prod.id})" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold py-1 px-2 rounded transition-all">✏️ Editar</button>
-                        <button onclick="eliminarProducto(${prod.id})" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-1 px-2 rounded transition-all">🗑️ Eliminar</button>
+                        <button onclick="abrirModalProducto('${prod.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold py-1 px-2 rounded transition-all">✏️ Editar</button>
+                        <button onclick="eliminarProducto('${prod.id}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-1 px-2 rounded transition-all">🗑️ Eliminar</button>
                     </div>
                 `;
             }
@@ -547,11 +605,11 @@
                             <div class="mt-auto">
                                 <div class="flex flex-col md:flex-row gap-1.5 md:gap-1 md:items-center">
                                     <div class="flex items-center gap-0.5 bg-white justify-center">
-                                        <button onclick="cambiarCantidadInput(${prod.id}, -1)" class="w-7 h-7 flex items-center justify-center rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 font-bold text-sm">−</button>
+                                        <button onclick="cambiarCantidadInput('${prod.id}', -1)" class="w-7 h-7 flex items-center justify-center rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 font-bold text-sm">−</button>
                                         <input id="cant-${prod.id}" min="1" class="w-10 h-7 text-center text-xs font-bold text-black border border-gray-300 rounded bg-white focus:outline-none" type="number" value="1">
-                                        <button onclick="cambiarCantidadInput(${prod.id}, 1)" class="w-7 h-7 flex items-center justify-center rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 font-bold text-sm">+</button>
+                                        <button onclick="cambiarCantidadInput('${prod.id}', 1)" class="w-7 h-7 flex items-center justify-center rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 font-bold text-sm">+</button>
                                     </div>
-                                    <button onclick="agregarAlCarrito(${prod.id})" class="w-full md:flex-1 text-xs py-1.5 px-2 rounded font-semibold transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95">Comprar</button>
+                                    <button onclick="agregarAlCarrito('${prod.id}')" class="w-full md:flex-1 text-xs py-1.5 px-2 rounded font-semibold transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95">Comprar</button>
                                 </div>
                                 ${botonesAdminHTML}
                             </div>
@@ -561,44 +619,23 @@
             `;
         }
 
-        function cargarProductos() {
-            const params = new URLSearchParams(window.location.search);
-            const catSeleccionada = params.get('categoria') || 'TODOS';
-
-            const titulo = document.getElementById('titulo-categoria');
-            const grid = document.getElementById('grid-productos');
-
-            titulo.textContent = catSeleccionada === 'TODOS' ? 'Productos Destacados' : `Categoría: ${catSeleccionada}`;
-
-            const filtrados = catSeleccionada === 'TODOS' 
-                ? productosDB 
-                : productosDB.filter(p => p.categoria === catSeleccionada);
-
-            if (filtrados.length === 0) {
-                grid.innerHTML = `<p class="col-span-full text-center text-gray-600 py-8">No hay productos cargados en esta categoría.</p>`;
-                return;
-            }
-
-            grid.innerHTML = filtrados.map(prod => generarCardProductoHTML(prod)).join('');
-        }
-
-        function cambiarCantidadInput(id, delta) {
+        window.cambiarCantidadInput = function(id, delta) {
             const input = document.getElementById(`cant-${id}`);
             let val = parseInt(input.value) + delta;
             if (val >= 1) input.value = val;
-        }
+        };
 
-        function agregarAlCarrito(id) {
+        window.agregarAlCarrito = function(id) {
             const input = document.getElementById(`cant-${id}`);
             const cantidad = parseInt(input.value);
             const selectPrecio = document.getElementById(`tipo-precio-${id}`);
             const tipoSeleccionado = selectPrecio.value;
             
-            const producto = productosDB.find(p => p.id === id);
+            const producto = productosDB.find(p => p.id == id);
             const precioUnitario = tipoSeleccionado === 'mayorista' ? producto.precioMayorista : producto.precioMinorista;
             const etiquetaModalidad = tipoSeleccionado === 'mayorista' ? 'Mayorista' : 'Minorista';
 
-            const index = carrito.findIndex(item => item.id === id && item.modalidad === tipoSeleccionado);
+            const index = carrito.findIndex(item => item.id == id && item.modalidad === tipoSeleccionado);
             if (index !== -1) {
                 carrito[index].cantidad += cantidad;
             } else {
@@ -614,32 +651,28 @@
 
             actualizarCarrito();
             alert(`¡Agregado al carrito (${etiquetaModalidad})!`);
-        }
+        };
 
         function actualizarCarrito() {
             const badge = document.getElementById('cart-badge');
             const totalItems = carrito.reduce((sum, i) => sum + i.cantidad, 0);
-
             if (totalItems > 0) {
                 badge.textContent = totalItems;
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
             }
-
             renderizarItemsCarrito();
         }
 
         function renderizarItemsCarrito() {
             const contenedor = document.getElementById('items-carrito');
             const totalElem = document.getElementById('total-carrito');
-
             if (carrito.length === 0) {
                 contenedor.innerHTML = '<p class="text-center text-gray-500 py-8">Tu carrito está vacío.</p>';
                 totalElem.textContent = '$0,00';
                 return;
             }
-
             let total = 0;
             contenedor.innerHTML = carrito.map((item, index) => {
                 const subtotal = item.precio * item.cantidad;
@@ -659,43 +692,38 @@
                     </div>
                 `;
             }).join('');
-
             totalElem.textContent = formatearPrecio(total);
         }
 
-        function eliminarDelCarrito(index) {
+        window.eliminarDelCarrito = function(index) {
             carrito.splice(index, 1);
             actualizarCarrito();
-        }
+        };
 
-        function abrirModalCarrito() {
+        window.abrirModalCarrito = function() {
             document.getElementById('modal-carrito').classList.remove('hidden');
-        }
+        };
 
-        function cerrarModalCarrito() {
+        window.cerrarModalCarrito = function() {
             document.getElementById('modal-carrito').classList.add('hidden');
-        }
+        };
 
-        function confirmarCompraWhatsApp() {
+        window.confirmarCompraWhatsApp = function() {
             if (carrito.length === 0) {
                 alert('El carrito está vacío');
                 return;
             }
-
             let mensaje = "¡Hola! Elite Importadora, quisiera realizar el siguiente pedido:\n\n";
             let total = 0;
-
             carrito.forEach(item => {
                 const subtotal = item.precio * item.cantidad;
                 total += subtotal;
                 mensaje += `• ${item.nombre} (${item.etiquetaModalidad}) x${item.cantidad} - ${formatearPrecio(subtotal)}\n`;
             });
-
             mensaje += `\n*TOTAL ESTIMADO:* ${formatearPrecio(total)}\n\n¿Me indican cómo continuar con el pago y envío?`;
-
             const urlWhatsApp = `https://wa.me/message/5JBR7UH53QZRN1?text=${encodeURIComponent(mensaje)}`;
             window.open(urlWhatsApp, '_blank');
-        }
+        };
 
         let bannerIndexActual = 0;
         const totalBanners = 2;
@@ -703,11 +731,8 @@
         function actualizarCarrusel() {
             const contenedor = document.getElementById('carousel-slides');
             const indicadores = document.querySelectorAll('.indicador-banner');
-            
             if (!contenedor) return;
-
             contenedor.style.transform = `translateX(-${bannerIndexActual * 100}%)`;
-
             indicadores.forEach((dot, index) => {
                 if (index === bannerIndexActual) {
                     dot.classList.remove('bg-gray-400', 'opacity-60');
@@ -719,10 +744,10 @@
             });
         }
 
-        function irABanner(index) {
+        window.irABanner = function(index) {
             bannerIndexActual = index;
             actualizarCarrusel();
-        }
+        };
 
         function iniciarCarruselAutomatico() {
             setInterval(() => {
@@ -733,7 +758,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             verificarEstadoAdmin();
-            cargarProductos();
+            window.cargarProductos();
             iniciarCarruselAutomatico();
         });
     </script>
